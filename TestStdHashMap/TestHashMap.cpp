@@ -4,13 +4,13 @@
 #include <algorithm>
 #define HASH_SIZE 1000000
 #define TEST_CASE_NUMBER 2900000
-
+#define TABLE_SIZE (HASH_SIZE * 3)
 
 struct HashMap{
 	int first[HASH_SIZE];
-	int nxt[HASH_SIZE * 3];
-	int k[HASH_SIZE * 3];
-	int v[HASH_SIZE * 3];
+	int nxt[TABLE_SIZE];
+	int k[TABLE_SIZE];
+	int v[TABLE_SIZE];
 	int tot;
 
 	bool find(int key, int &value){
@@ -49,6 +49,7 @@ struct HashMap{
 }custom_map;
 
 std::unordered_map<int, int> std_map;
+std::map<int, int> std_tree_map;
 
 int test_case_key[TEST_CASE_NUMBER];
 int test_case_value[TEST_CASE_NUMBER];
@@ -88,6 +89,20 @@ int main(){
 	QueryPerformanceCounter(&nEndTime);
 	printf("stdtime=%.10f\n", (double)(nEndTime.QuadPart - nBeginTime.QuadPart) / nFreq.QuadPart);
 
+
+	QueryPerformanceCounter(&nBeginTime);
+	for (int i = 0; i < TEST_CASE_NUMBER; ++i) std_tree_map.emplace(test_case_key[i], test_case_value[i]);
+	for (int i = 0; i < TEST_CASE_NUMBER; ++i) {
+		auto it = std_tree_map.find(test_case_key[i]);
+		if (it != std_tree_map.end()) answer1[i] = it->second;
+	}
+	/*for (int i = 0; i < TEST_CASE_NUMBER; ++i) {
+	auto it = std_map.find(random_query[i]);
+	if (it != std_map.end()) rand_answer1[i] = it->second;
+	}*/
+	QueryPerformanceCounter(&nEndTime);
+	printf("std tree map time=%.10f\n", (double)(nEndTime.QuadPart - nBeginTime.QuadPart) / nFreq.QuadPart);
+
 	QueryPerformanceCounter(&nBeginTime);
 
 	for (int i = 0; i < TEST_CASE_NUMBER; ++i) custom_map.insert(test_case_key[i], test_case_value[i]);
@@ -118,7 +133,17 @@ int main(){
 	}
 	QueryPerformanceCounter(&nEndTime);
 
-	printf("maptime=%.10f sum = %d\n", (double)(nEndTime.QuadPart - nBeginTime.QuadPart) / nFreq.QuadPart, sum);
+	printf("std map time=%.10f sum = %d\n", (double)(nEndTime.QuadPart - nBeginTime.QuadPart) / nFreq.QuadPart, sum);
+
+
+	QueryPerformanceCounter(&nBeginTime);
+	sum = 0;
+	for (auto it = std_tree_map.begin(); it != std_tree_map.end(); ++it){
+		sum += it->first;
+	}
+	QueryPerformanceCounter(&nEndTime);
+
+	printf("std tree map time=%.10f sum = %d\n", (double)(nEndTime.QuadPart - nBeginTime.QuadPart) / nFreq.QuadPart, sum);
 
 	std::vector<int> v;
 	for (int i = 0; i < TEST_CASE_NUMBER; ++i) v.push_back(test_case_key[i]);
@@ -138,7 +163,20 @@ int main(){
 		sum += test_case_key[i];
 	}
 	QueryPerformanceCounter(&nEndTime);
-	printf("arraytime=%.10f sum = %d\n", (double)(nEndTime.QuadPart - nBeginTime.QuadPart) / nFreq.QuadPart, sum);
+	printf("arraytime++=%.10f sum = %d\n", (double)(nEndTime.QuadPart - nBeginTime.QuadPart) / nFreq.QuadPart, sum);
+
+
+	QueryPerformanceCounter(&nBeginTime);
+	sum = 0;
+	for (int i = 0; i < HASH_SIZE; ++i){
+		int k = custom_map.first[i];
+		while (k != -1){
+			sum += custom_map.k[k];
+			k = custom_map.nxt[k];
+		}
+	}
+	QueryPerformanceCounter(&nEndTime);
+	printf("Custom Map time=%.10f sum = %d\n", (double)(nEndTime.QuadPart - nBeginTime.QuadPart) / nFreq.QuadPart, sum);
 
 
 
